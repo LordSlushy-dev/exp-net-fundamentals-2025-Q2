@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# Exit immediately if a command exits with a non-zero status.
+set -e
+
+# === User-configurable defaults ===
+STACK_NAME=${1:-MyVPCStack}
+REGION=${2:-us-west-2}
+TEMPLATE_FILE="template.yaml"
+
+# Parameters (edit these if needed)
+VPC_CIDR="10.200.123.0/24"
+PUBLIC_SUBNET_CIDR="10.200.123.0/25"
+PRIVATE_SUBNET_CIDR="10.200.123.128/25"
+AVAILABILITY_ZONE="${REGION}a"
+
+echo "Deploying stack: $STACK_NAME in region: $REGION"
+
+# Deploy the CloudFormation stack
+aws cloudformation deploy \
+  --template-file "$TEMPLATE_FILE" \
+  --stack-name "$STACK_NAME" \
+  --region "$REGION" \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --parameter-overrides \
+    VpcCidr="$VPC_CIDR" \
+    PublicSubnetCidr="$PUBLIC_SUBNET_CIDR" \
+    PrivateSubnetCidr="$PRIVATE_SUBNET_CIDR" \
+    AvailabilityZone="$AVAILABILITY_ZONE"
+
+echo "Waiting for the stack creation to complete..."
+aws cloudformation wait stack-create-complete \
+    --stack-name "$STACK_NAME" \
+    --region "$REGION"
+
+
+echo "✅ Stack '$STACK_NAME' deployed successfully."
+
+# Print outputs
+aws cloudformations
